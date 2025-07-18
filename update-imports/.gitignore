@@ -1,0 +1,10 @@
+
+# Modules
+node_modules
+
+# Cloned repositories
+cloned-repos
+
+# Environment variables
+.env
+
