@@ -39,6 +39,38 @@ npm install
 
 ---
 
+## 🔧 Configuration Options
+
+You can customize the tool by editing `config/config.ts`:
+
+- **IMPORT_PATH_MAP**: Map old import paths to new ones. Example:
+  ```ts
+  export const IMPORT_PATH_MAP = {
+    "./_components/user-profile": "./_components/user-profileV2",
+    // Add more mappings as needed
+  };
+  ```
+- **BASE_PROJECTS_DIR**: Set the base directory for your Next.js projects. Example:
+  ```ts
+  export const BASE_PROJECTS_DIR = "./"; // Or specify a custom path
+  ```
+- **FILE_EXTENSIONS**: Specify which file extensions to process. Example:
+  ```ts
+  export const FILE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx"];
+  ```
+- **GIT_BRANCH_PREFIX**, **GIT_COMMIT_MESSAGE**, **PR_TITLE_PREFIX**: Customize git branch naming, commit messages, and PR titles for automated changes.
+- **GITHUB_PROJECTS**: List the GitHub repository URLs to process. Example:
+  ```ts
+  export const GITHUB_PROJECTS = [
+    "https://github.com/your-username/your-repo",
+    // Add more repo URLs here
+  ];
+  ```
+
+Update these values in `config/config.ts` to fit your workflow and repositories.
+
+---
+
 ## 🚀 Usage
 
 Run the main script:
