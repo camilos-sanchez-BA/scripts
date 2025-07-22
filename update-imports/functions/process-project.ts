@@ -52,17 +52,19 @@ export async function processProject(
 
     if (modifiedFilesCount === 0) {
       console.log(`  No import changes needed for ${project_name}.`);
-      process.chdir(projectOriginalCwd); // Revert CWD
-      return false;
     }
 
     console.log(`  ${modifiedFilesCount} files modified in ${project_name}.`);
 
     // Run pre-commit checks
     console.log("  Running pre-commit checks...");
+    console.log(`    [${component}] Running: npm run lint`);
     execSync("npm run lint", { stdio: "inherit" });
+    console.log(`    [${component}] Running: npm run build`);
     execSync("npm run build", { stdio: "inherit" });
+    console.log(`    [${component}] Running: npm run prettier:fix`);
     execSync("npm run prettier:fix", { stdio: "inherit" });
+    console.log(`    [${component}] Running: npm run prettier`);
     execSync("npm run prettier", { stdio: "inherit" });
 
     // 2. Git Operations
@@ -73,8 +75,6 @@ export async function processProject(
         console.log(
           `  No pending changes after import update in ${project_name}. Skipping Git operations.`
         );
-        process.chdir(projectOriginalCwd); // Revert CWD
-        return false;
       }
 
       console.log("  Staging changes...");
@@ -101,7 +101,6 @@ export async function processProject(
       } catch (revert_e) {
         // Ignore if checkout also fails
       }
-      return false;
     }
   }
   // 3. Create Pull Request (Placeholder)
@@ -135,61 +134,61 @@ export async function processProject(
             head: GIT_BRANCH_PREFIX,
             base: GIT_BASE_BRANCH, // Or your default branch (e.g., "master", "develop")
             body: `<!---
-            - Update the title of this PR to match <feat|fix|spike|test>[!]: NX-123 <imperative-description>
-            Please complete all the boxes below, place a lowercase x within the brackets, like [x]
-            -->
+- Update the title of this PR to match <feat|fix|spike|test>[!]: NX-123 <imperative-description>
+Please complete all the boxes below, place a lowercase x within the brackets, like [x]
+-->
 
-            ## 📝 Description
+## 📝 Description
 
-            - [${JIRA_TICKET}](https://iagtech.atlassian.net/browse/${JIRA_TICKET}) <!-- Link to the ticket -->
+- [${JIRA_TICKET}](https://iagtech.atlassian.net/browse/${JIRA_TICKET}) <!-- Link to the ticket -->
 
-            ${GIT_COMMIT_MESSAGE}
+${GIT_COMMIT_MESSAGE}
 
-            ## ✅ Before asking to review I checked
+## ✅ Before asking to review I checked
 
-            - [x] npm run lint
-            - [x] npm run build
-            - [x] npm run prettier
-            - [x] npm run test:unit
-            - [x] npm run test:mutation
+- [x] npm run lint
+- [x] npm run build
+- [x] npm run prettier
+- [x] npm run test:unit
+- [x] npm run test:mutation
 
-            ### ✅ Accessibility Checklist
+### ✅ Accessibility Checklist
 
-            - [ ] I have tested this change for accessibility using the [axe dev tools](https://chromewebstore.google.com/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd).
-            - [ ] I have reviewed the axe accessibility output and addressed any issues found.
-            - [ ] I have included a screenshot of the axe accessibility output in the pull request.
-            - [ ] I have used a screen-reader to test what I have built.
+- [ ] I have tested this change for accessibility using the [axe dev tools](https://chromewebstore.google.com/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd).
+- [ ] I have reviewed the axe accessibility output and addressed any issues found.
+- [ ] I have included a screenshot of the axe accessibility output in the pull request.
+- [ ] I have used a screen-reader to test what I have built.
 
-            ### Solves # (Jira issue)
+### Solves # (Jira issue)
 
-            _List any issues this PR will resolve, e.g. Closes [...]._
+_List any issues this PR will resolve, e.g. Closes [...]._
 
-            | name           | added | edited | removed | Story updated |
-            | -------------- | :---: | :----: | :-----: | :------------:|
-            | header         |       |   x    |         |               |
-            |                |       |        |         |               |
+| name           | added | edited | removed | Story updated |
+| -------------- | :---: | :----: | :-----: | :------------:|
+| header         |       |   x    |         |               |
+|                |       |        |         |               |
 
-            ## Type of change
+## Type of change
 
-            - [ ] New feature (non-breaking change which adds functionality)
-            - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-            - [x] Bug fix (non-breaking change which fixes an issue)
-            - [ ] Hot fix (fixes an issue in master branch)
-            - [ ] Docs (Documentation only changes)
-            - [ ] Style (Changes that do not affect the meaning of the code, formatting, missing semi-colons, etc)
-            - [ ] Refactor (Changes that neither fixes a bug or adds a feature)
-            - [ ] Performance (Changes that improve performance)
-            - [ ] Chore (Changes to the build process or auxiliary tools and libraries)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [x] Bug fix (non-breaking change which fixes an issue)
+- [ ] Hot fix (fixes an issue in master branch)
+- [ ] Docs (Documentation only changes)
+- [ ] Style (Changes that do not affect the meaning of the code, formatting, missing semi-colons, etc)
+- [ ] Refactor (Changes that neither fixes a bug or adds a feature)
+- [ ] Performance (Changes that improve performance)
+- [ ] Chore (Changes to the build process or auxiliary tools and libraries)
 
-            ## 📸 Screenshots
+## 📸 Screenshots
 
-            ### Unit tests screenshot
+### Unit tests screenshot
 
-            _Remember all our projects required a minimum coverage of 95-100% and all the unit test must pass._
+_Remember all our projects required a minimum coverage of 95-100% and all the unit test must pass._
 
-            ### Accessibility Screenshots
+### Accessibility Screenshots
 
-            _Please include a screenshot of the axe accessibility output here._`,
+_Please include a screenshot of the axe accessibility output here._`,
           });
           console.log(`  Pull Request created: ${pr.data.html_url}`);
         } else {
