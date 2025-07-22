@@ -1,6 +1,6 @@
 # 🚀 Update Imports
 
-A simple tool to automate updating import statements across multiple repositories. Built with TypeScript for reliability and ease of use.
+A tool to automate updating import statements and creating pull requests across multiple repositories. Built with TypeScript for reliability and ease of use.
 
 ---
 
@@ -8,6 +8,10 @@ A simple tool to automate updating import statements across multiple repositorie
 
 - Batch update import paths in your codebase
 - Environment-based configuration
+- Automated cloning and cleanup of repositories
+- Pre-commit checks: lint, build, prettier
+- Automated pull request creation (if GITHUB_TOKEN is set)
+- Accessibility and testing checklist in PR body
 - Easy setup and execution
 
 ---
@@ -30,41 +34,63 @@ npm install
 
 ## ⚙️ Configuration
 
-1. Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-2. Fill in the required environment variables in `.env` with your actual values.
-3. Update repository URLs as needed in your configuration.
+Edit `config/config.ts` to customize the tool:
 
----
-
-## 🔧 Configuration Options
-
-You can customize the tool by editing `config/config.ts`:
-
-- **IMPORT_PATH_MAP**: Map old import paths to new ones. Example:
+- **IMPORT_PATH**: Array of component names to update imports for. Example:
   ```ts
-  export const IMPORT_PATH_MAP = {
-    "./_components/user-profile": "./_components/user-profileV2",
-    // Add more mappings as needed
-  };
+  export const IMPORT_PATH: string[] = [
+    "Loading",
+    "AirlineLogoLine",
+    "DataStrip",
+    "FareCard",
+    "FlightBanner",
+    "FlightDetailsSection",
+    "PassengerCard",
+  ];
   ```
-- **BASE_PROJECTS_DIR**: Set the base directory for your Next.js projects. Example:
+- **BASE_PROJECTS_DIR**: The base directory where your Next.js projects are located. Example:
   ```ts
   export const BASE_PROJECTS_DIR = "./"; // Or specify a custom path
   ```
-- **FILE_EXTENSIONS**: Specify which file extensions to process. Example:
+- **FILE_EXTENSIONS**: File extensions to process. Example:
   ```ts
-  export const FILE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx"];
+  export const FILE_EXTENSIONS: string[] = [".ts", ".tsx", ".js", ".jsx"];
   ```
-- **GIT_BRANCH_PREFIX**, **GIT_COMMIT_MESSAGE**, **PR_TITLE_PREFIX**: Customize git branch naming, commit messages, and PR titles for automated changes.
-- **GITHUB_PROJECTS**: List the GitHub repository URLs to process. Example:
+- **JIRA_TICKET**: Jira ticket identifier for branch/commit/PR naming. Example:
   ```ts
-  export const GITHUB_PROJECTS = [
-    "https://github.com/your-username/your-repo",
+  export const JIRA_TICKET = "BB-67290";
+  ```
+- **GIT_BASE_BRANCH**: Base branch for the PR. Example:
+  ```ts
+  export const GIT_BASE_BRANCH = "develop";
+  ```
+- **GIT_BRANCH_PREFIX**: Branch name prefix for automated PRs. Example:
+  ```ts
+  export const GIT_BRANCH_PREFIX = `fix/${JIRA_TICKET}-update-imports`;
+  ```
+- **GIT_COMMIT_MESSAGE**: Commit message for automated changes. Example:
+  ```ts
+  export const GIT_COMMIT_MESSAGE = `fix(${JIRA_TICKET}): update library import paths`;
+  ```
+- **PR_TITLE_PREFIX**: PR title prefix. Example:
+  ```ts
+  export const PR_TITLE_PREFIX = `fix(${JIRA_TICKET}): update library imports`;
+  ```
+- **GITHUB_PROJECTS**: Array of GitHub repository URLs to process. Example:
+  ```ts
+  export const GITHUB_PROJECTS: string[] = [
+    "https://github.com/BritishAirways-Nexus/nx-ch-web-shared-components-playground",
+    "https://github.com/BritishAirways-Nexus/nx-ch-web-customerhub",
     // Add more repo URLs here
   ];
+  ```
+- **DS_COMPONENTS_MIN_VERSION**: Minimum required version of the design system library. Example:
+  ```ts
+  export const DS_COMPONENTS_MIN_VERSION = "3.1.1";
+  ```
+- **VALIDATE_VERSION**: Set to `true` to enable version validation, or `false` to skip. Example:
+  ```ts
+  export const VALIDATE_VERSION = true;
   ```
 
 Update these values in `config/config.ts` to fit your workflow and repositories.
@@ -79,6 +105,15 @@ Run the main script:
 npm start
 ```
 
+The script will:
+
+- Clone all repositories listed in `GITHUB_PROJECTS` into a temporary `cloned-repos` directory
+- Find Next.js projects and update import statements as configured
+- Run pre-commit checks (`lint`, `build`, `prettier`)
+- Create a new branch, commit, and push changes
+- Attempt to create a pull request automatically if `GITHUB_TOKEN` is set, or provide manual instructions
+- Clean up the `cloned-repos` directory after execution
+
 ---
 
 ## 📝 Troubleshooting
@@ -86,18 +121,13 @@ npm start
 - Ensure all environment variables are set correctly.
 - Check repository URLs for typos.
 - If you encounter issues, run with verbose logging or check for TypeScript errors.
+- Make sure your `GITHUB_TOKEN` has permission to create PRs if you want automated PR creation.
 
 ---
 
 ## 📚 Contributing
 
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
----
-
-## 📧 Contact
-
-For questions or support, contact the maintainer at [your-email@example.com].
 
 ---
 
