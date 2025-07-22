@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import "dotenv/config";
-import { GITHUB_PROJECTS, IMPORT_PATH_MAP } from "./config/config";
+import { GITHUB_PROJECTS, IMPORT_PATH } from "./config/config";
 import { getRepoNameFromUrl } from "./functions/get-repo-name-from-url";
 import { cloneRepo } from "./functions/clone-repo";
 import { findNextjsProjects } from "./functions/find-next-projects";
@@ -18,6 +18,7 @@ if (!fs.existsSync(CLONE_BASE_DIR)) {
 
 async function main() {
   console.log("Starting automated import update and PR creation script...");
+  console.log(`\nUpdating ${IMPORT_PATH} value from 'core' to 'components'.`);
 
   let allProjects: string[] = [];
 
@@ -47,7 +48,7 @@ async function main() {
 
   let totalPrsInitiated = 0;
   for (const projectPath of allProjects) {
-    const prCreated = await processProject(projectPath, IMPORT_PATH_MAP);
+    const prCreated = await processProject(projectPath, IMPORT_PATH);
     if (prCreated) {
       totalPrsInitiated++;
     }
@@ -61,6 +62,14 @@ async function main() {
   console.log(
     "Please review the created branches and open Pull Requests on your Git hosting platform."
   );
+
+  // Remove cloned-repos directory after execution
+  try {
+    fs.rmSync(CLONE_BASE_DIR, { recursive: true, force: true });
+    console.log(`Removed cloned-repos directory: ${CLONE_BASE_DIR}`);
+  } catch (e) {
+    console.error(`Failed to remove cloned-repos directory:`, e);
+  }
 }
 
 // Run the main function

@@ -1,46 +1,81 @@
 import * as fs from "fs";
 import * as path from "path";
-import { ImportMap } from "../interfaces/import-map";
+
 export function updateImportsInFile(
   filepath: string,
-  importMap: ImportMap
+  importMap: string
 ): boolean {
   let content = fs.readFileSync(filepath, "utf8");
   let newContent = content;
   let changesMade = false;
 
-  for (const oldSpecifier in importMap) {
-    const newSpecifier = importMap[oldSpecifier];
-    // Regex to find import/require statements with the old specifier
-    // This covers:
-    // - import ... from 'old-specifier';
-    // - import ... from "old-specifier";
-    // - require('old-specifier');
-    // - require("old-specifier");
-    // It uses a non-greedy match for the content before 'from'/'require'
-    // and captures the quote type in group 2.
-    const escapedOldSpecifier = oldSpecifier.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
-    ); // Escape regex special chars
-    const pattern = new RegExp(
-      `(import\\s+.*?from\\s+|require\\s*\\()\\s*(['"])(${escapedOldSpecifier})\\2`,
-      "g"
-    );
+  // --- Custom logic for import migration ---
+  // 1. Find all import statements from core and components
+  const coreImportRegex =
+    /import\s*{([^}]+)}\s*from\s*['"]@britishairways-nexus\/nx-lib-design-system-core['"];?/g;
+  const componentsImportRegex =
+    /import\s*{([^}]+)}\s*from\s*['"]@britishairways-nexus\/nx-lib-design-system-components['"];?/g;
 
-    if (newContent.match(pattern)) {
-      newContent = newContent.replace(pattern, `$1$2${newSpecifier}$2`);
-      if (newContent !== content) {
-        // Check if actual change occurred
-        changesMade = true;
-        console.log(
-          `    - Updated '${oldSpecifier}' to '${newSpecifier}' in ${path.basename(
-            filepath
-          )}`
-        );
-        content = newContent; // Update content for subsequent replacements in the same file
-      }
+  let coreMatch = coreImportRegex.exec(content);
+  let componentsMatch = componentsImportRegex.exec(content);
+
+  let coreImports: string[] = [];
+  let componentsImports: string[] = [];
+
+  if (coreMatch) {
+    coreImports = coreMatch[1]
+      .split(",")
+      .map((i) => i.trim())
+      .filter(Boolean);
+  }
+  if (componentsMatch) {
+    componentsImports = componentsMatch[1]
+      .split(",")
+      .map((i) => i.trim())
+      .filter(Boolean);
+  }
+
+  // If import is in core, move it to components
+  if (coreImports.includes(importMap)) {
+    // Remove import from core
+    coreImports = coreImports.filter((i) => i !== importMap);
+    // Add import to components
+    if (!componentsImports.includes(importMap)) {
+      componentsImports.push(importMap);
     }
+    changesMade = true;
+  }
+
+  // Rebuild import statements if changes were made
+  if (changesMade) {
+    // Remove old imports
+    newContent = newContent.replace(
+      coreImportRegex,
+      coreImports.length > 0
+        ? `import { ${coreImports.join(
+            ", "
+          )} } from "@britishairways-nexus/nx-lib-design-system-core";`
+        : ""
+    );
+    newContent = newContent.replace(
+      componentsImportRegex,
+      componentsImports.length > 0
+        ? `import { ${componentsImports.join(
+            ", "
+          )} } from "@britishairways-nexus/nx-lib-design-system-components";`
+        : ""
+    );
+    // If no components import existed, add one
+    if (!componentsMatch && componentsImports.length > 0) {
+      newContent =
+        `import { ${componentsImports.join(
+          ", "
+        )} } from "@britishairways-nexus/nx-lib-design-system-components";\n` +
+        newContent;
+    }
+    fs.writeFileSync(filepath, newContent, "utf8");
+    console.log(`    - Migrated CarrierIcons in ${path.basename(filepath)}`);
+    return true;
   }
 
   if (changesMade) {

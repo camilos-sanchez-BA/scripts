@@ -1,12 +1,5 @@
-import { ImportMap } from "../interfaces/import-map";
-
 // Define your import path mappings here.
-export const IMPORT_PATH_MAP: ImportMap = {
-  "./_components/user-profile": "./_components/user-profileV2",
-  // Add more mappings as needed:
-  // "old-path/utility": "new-path/shared-utility",
-  // "another-old-lib/button": "design-system/button",
-};
+export const IMPORT_PATH: string = "CarrierIcons";
 
 // The base directory where your Next.js projects are located.
 // This script will look for subdirectories within this path.

@@ -2,7 +2,6 @@ import { Octokit } from "@octokit/rest";
 import { walkDir } from "./walk-dir";
 import { updateImportsInFile } from "./update-imports-in-file";
 import { runGitCommand } from "./run-git-command";
-import { ImportMap } from "../interfaces/import-map";
 import * as path from "path";
 import {
   FILE_EXTENSIONS,
@@ -13,7 +12,7 @@ import {
 
 export async function processProject(
   projectPath: string,
-  importMap: ImportMap
+  importMap: string
 ): Promise<boolean> {
   const projectOriginalCwd = process.cwd(); // Store original CWD
   process.chdir(projectPath); // Change CWD to the project directory
