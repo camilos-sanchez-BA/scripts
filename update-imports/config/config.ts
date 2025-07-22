@@ -18,6 +18,9 @@ export const PR_TITLE_PREFIX = `fix(${JIRA_TICKET}): update library imports`;
 // --- New: Array of GitHub Repositories to Process ---
 export const GITHUB_PROJECTS: string[] = [
   "https://github.com/BritishAirways-Nexus/nx-ch-web-shared-components-playground",
-  "https://github.com/BritishAirways-Nexus/nx-ch-web-checkout",
+  "https://github.com/BritishAirways-Nexus/nx-ch-web-customerhub",
   // Add more repo URLs here
 ];
+
+// Minimum required version of the design system library.
+export const DS_COMPONENTS_MIN_VERSION = "3.1.1";

@@ -4,6 +4,7 @@ import { updateImportsInFile } from "./update-imports-in-file";
 import { runGitCommand } from "./run-git-command";
 import * as path from "path";
 import { execSync } from "child_process";
+import { validateNxLibDesignSystemVersion } from "./validate-lib-version";
 import {
   FILE_EXTENSIONS,
   GIT_BASE_BRANCH,
@@ -22,6 +23,15 @@ export async function processProject(
 
   const project_name = path.basename(projectPath);
   console.log(`\n--- Processing Project: ${project_name} (${projectPath}) ---`);
+
+  // Validate nx-lib-design-system-components version
+  if (!validateNxLibDesignSystemVersion(projectPath)) {
+    console.log(
+      `  Skipping project: ${project_name} due to invalid nx-lib-design-system-components version.`
+    );
+    process.chdir(projectOriginalCwd);
+    return false;
+  }
 
   // 1. Find and update source files
   let modifiedFilesCount = 0;
