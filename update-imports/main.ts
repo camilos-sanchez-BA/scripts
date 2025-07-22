@@ -73,4 +73,13 @@ async function main() {
 }
 
 // Run the main function
-main().catch(console.error);
+main().catch((error) => {
+  console.error("An error occurred during script execution:", error);
+  try {
+    fs.rmSync(CLONE_BASE_DIR, { recursive: true, force: true });
+    console.log(`Removed cloned-repos directory: ${CLONE_BASE_DIR}`);
+  } catch (e) {
+    console.error(`Failed to remove cloned-repos directory:`, e);
+  }
+  process.exit(1);
+});
