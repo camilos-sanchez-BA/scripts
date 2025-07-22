@@ -1,5 +1,13 @@
 // Define your import path mappings here.
-export const IMPORT_PATH: string = "Loading";
+export const IMPORT_PATH: string[] = [
+  "Loading",
+  "AirlineLogoLine",
+  "DataStrip",
+  "FareCard",
+  "FlightBanner",
+  "FlightDetailsSection",
+  "PassengerCard",
+];
 
 // The base directory where your Next.js projects are located.
 // This script will look for subdirectories within this path.
@@ -24,3 +32,4 @@ export const GITHUB_PROJECTS: string[] = [
 
 // Minimum required version of the design system library.
 export const DS_COMPONENTS_MIN_VERSION = "3.1.1";
+export const VALIDATE_VERSION = true; // Set to false to skip version validation

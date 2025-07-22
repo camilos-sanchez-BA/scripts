@@ -18,6 +18,13 @@ if (!fs.existsSync(CLONE_BASE_DIR)) {
 
 async function main() {
   console.log("Starting automated import update and PR creation script...");
+  // Remove cloned-repos directory if it exists
+  try {
+    fs.rmSync(CLONE_BASE_DIR, { recursive: true, force: true });
+    console.log(`Removed cloned-repos directory: ${CLONE_BASE_DIR}`);
+  } catch (e) {
+    console.error(`Failed to remove cloned-repos directory:`, e);
+  }
   console.log(`\nUpdating ${IMPORT_PATH} value from 'core' to 'components'.`);
 
   let allProjects: string[] = [];
